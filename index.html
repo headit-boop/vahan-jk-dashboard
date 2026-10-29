@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VAHAN J&amp;K — Motor Car Dashboard</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">V</div>
+    <div>
+      <h1>VAHAN J&amp;K</h1>
+      <p>Motor Car registrations · maker × district · month-wise</p>
+    </div>
+  </div>
+  <div class="meta">
+    <span id="updated">Loading…</span>
+    <span class="dot"></span>
+    <span>Source: Vahan public dashboard</span>
+  </div>
+</header>
+
+<main>
+  <section class="filters card">
+    <label>Month
+      <select id="month"></select>
+    </label>
+    <label>District
+      <select id="district"></select>
+    </label>
+    <label>Maker
+      <select id="maker"></select>
+    </label>
+    <label>Compare with
+      <select id="compare">
+        <option value="prev">Previous month</option>
+        <option value="none">No comparison</option>
+      </select>
+    </label>
+    <button id="reset" class="ghost" type="button">Reset</button>
+  </section>
+
+  <section class="kpis">
+    <div class="kpi card">
+      <span class="label">Total registrations</span>
+      <strong id="kpiTotal">—</strong>
+      <small id="kpiDelta" class="muted">—</small>
+    </div>
+    <div class="kpi card">
+      <span class="label">Top maker</span>
+      <strong id="kpiMaker">—</strong>
+      <small id="kpiMakerValue" class="muted">—</small>
+    </div>
+    <div class="kpi card">
+      <span class="label">Top district</span>
+      <strong id="kpiDistrict">—</strong>
+      <small id="kpiDistrictValue" class="muted">—</small>
+    </div>
+    <div class="kpi card">
+      <span class="label">Makers with sales</span>
+      <strong id="kpiMakers">—</strong>
+      <small class="muted">in the selected slice</small>
+    </div>
+  </section>
+
+  <section class="two-col">
+    <div class="card">
+      <div class="card-head">
+        <h2>Monthly trend</h2>
+        <span class="hint">Click a bar to change month</span>
+      </div>
+      <div id="trend" class="trend"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Top makers</h2>
+        <span class="hint">Selected month &amp; district</span>
+      </div>
+      <div id="topMakers" class="bars"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>District comparison</h2>
+      <span class="hint">Selected month &amp; maker</span>
+    </div>
+    <div id="districtBars" class="bars district-bars"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2 id="matrixTitle">Maker × district</h2>
+      <span class="hint" id="matrixHint"></span>
+    </div>
+    <div class="table-wrap">
+      <table id="matrix"></table>
+    </div>
+  </section>
+
+  <section class="card" id="compareCard">
+    <div class="card-head">
+      <h2 id="compareTitle">Month comparison</h2>
+      <span class="hint">Same slice, previous month</span>
+    </div>
+    <div class="table-wrap">
+      <table id="compareTable"></table>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Data is monthly and cumulative to the scrape date. No CAPTCHA, no paid tools — generated from the public Vahan dashboard.</p>
+  <p id="footerMeta"></p>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

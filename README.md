@@ -4,7 +4,7 @@ A free, static dashboard for the monthly **Motor Car** maker × district data.
 
 ## Open it locally
 
-Double-click `index.html`. It loads `data.js` (no server, no internet needed).
+Double-click **`VAHAN_DASHBOARD.html`** — one self-contained file with the data, CSS and JS inlined. It works offline, no server. (`index.html` is the multi-file version.)
 
 - **Month** — pick any month from JAN to the latest scraped month.
 - **District** — All 20 or one district.
@@ -13,10 +13,14 @@ Double-click `index.html`. It loads `data.js` (no server, no internet needed).
 - Click bars in the trend, top-makers, or district charts to change the filters.
 - The matrix switches between **Maker × district** (All districts) and **Maker × month** (one district).
 
+## Daily updates
+
+The Windows task **Vahan Daily Report** runs at **09:30** and rebuilds `VAHAN_DASHBOARD.html` automatically. Refresh the browser page to see the new data.
+
 ## Publish free on GitHub Pages
 
 1. Create a free GitHub account and a **public** repository, e.g. `vahan-jk-dashboard`.
-2. Upload these four files to the repository root:
+2. Upload **`VAHAN_DASHBOARD.html`** as `index.html` (one file is enough), or upload the four separate files:
    - `index.html`
    - `styles.css`
    - `app.js`

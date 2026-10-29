@@ -24,6 +24,9 @@
 
 <main>
   <section class="filters card">
+    <label>Division
+      <select id="division"></select>
+    </label>
     <label>Month
       <select id="month"></select>
     </label>
@@ -62,6 +65,29 @@
       <span class="label">Makers with sales</span>
       <strong id="kpiMakers">—</strong>
       <small class="muted">in the selected slice</small>
+    </div>
+  </section>
+
+  <section class="card division-card">
+    <div class="card-head">
+      <h2>Division split</h2>
+      <span class="hint">Selected month · click a division to filter</span>
+    </div>
+    <div class="division-split">
+      <button class="division-tile" id="divJammu" type="button">
+        <span class="div-name">Jammu Division</span>
+        <strong id="divJammuTotal">—</strong>
+        <span id="divJammuPct" class="muted">—</span>
+      </button>
+      <button class="division-tile" id="divSrinagar" type="button">
+        <span class="div-name">Srinagar Division</span>
+        <strong id="divSrinagarTotal">—</strong>
+        <span id="divSrinagarPct" class="muted">—</span>
+      </button>
+    </div>
+    <div class="split-track" aria-hidden="true">
+      <span id="splitJammu"></span>
+      <span id="splitSrinagar"></span>
     </div>
   </section>
 

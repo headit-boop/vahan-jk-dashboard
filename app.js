@@ -16,6 +16,7 @@
   const districtSel = el("district");
   const makerSel = el("maker");
   const compareSel = el("compare");
+  const divisionSel = el("division");
   const resetBtn = el("reset");
 
   if (!DATA || !DATA.values) {
@@ -26,6 +27,42 @@
   const months = DATA.months.slice();
   const districts = DATA.districts.slice();
   const makers = DATA.makers.slice();
+
+  const DIVISIONS = {
+    JAMMU: [
+      "JAMMU RTO - JK2",
+      "KATHUA RTO - JK8",
+      "SAMBA ARTO - JK21",
+      "UDHAMPUR ARTO - JK14",
+      "REASI ARTO - JK20",
+      "RAJOURI ARTO - JK11",
+      "POONCH ARTO - JK12",
+      "DODA ARTO - JK6",
+      "RAMBAN ARTO - JK19",
+      "KISHTWAR ARTO - JK17",
+    ],
+    SRINAGAR: [
+      "SRINAGAR RTO - JK1",
+      "ANANTNAG ARTO - JK3",
+      "BANDIPORA ARTO - JK15",
+      "BARAMULLA ARTO - JK5",
+      "BUDGAM ARTO - JK4",
+      "GANDERBAL ARTO - JK16",
+      "KULGAM ARTO - JK18",
+      "KUPWARA ARTO - JK9",
+      "PULWAMA ARTO - JK13",
+      "SHOPIAN ARTO - JK22",
+    ],
+  };
+  const DIVISION_LABELS = {
+    ALL: "All J&K",
+    JAMMU: "Jammu Division",
+    SRINAGAR: "Srinagar Division",
+  };
+  let activeDivision = "ALL";
+
+  const scopeDistricts = (div = activeDivision) =>
+    div === "ALL" ? districts : DIVISIONS[div].filter((d) => districts.includes(d));
 
   const fmt = (n) => nf.format(Math.round(n || 0));
   const get = (m, d, k) => {
@@ -38,7 +75,8 @@
   const shortDistrict = (d) => d.replace(/\s+(ARTO|RTO)\s*-\s*JK\d+/i, "").trim();
   const monthName = (m) => MONTH_NAMES[m] || m;
 
-  function sumSlice(m, d, k) {
+  function sumSlice(m, d, k, div = activeDivision) {
+    const ds = scopeDistricts(div);
     if (d !== ALL && k !== ALL) return get(m, d, k);
     if (d !== ALL) {
       let s = 0;
@@ -47,27 +85,44 @@
     }
     if (k !== ALL) {
       let s = 0;
-      for (const dist of districts) s += get(m, dist, k);
+      for (const dist of ds) s += get(m, dist, k);
       return s;
     }
     let s = 0;
-    for (const dist of districts) for (const maker of makers) s += get(m, dist, maker);
+    for (const dist of ds) for (const maker of makers) s += get(m, dist, maker);
     return s;
   }
 
   function makersInSlice(m, d, k) {
     const out = [];
+    const ds = scopeDistricts();
     for (const maker of makers) {
       if (k !== ALL && maker !== k) continue;
-      const v = d === ALL ? districts.reduce((a, dist) => a + get(m, dist, maker), 0) : get(m, d, maker);
+      const v = d === ALL ? ds.reduce((a, dist) => a + get(m, dist, maker), 0) : get(m, d, maker);
       if (v > 0) out.push([maker, v]);
     }
     return out.sort((a, b) => b[1] - a[1]);
   }
 
-  function districtsInSlice(m, k) {
-    const out = districts.map((d) => [d, sumSlice(m, d, k)]);
+  function districtsInSlice(m, k, div = activeDivision) {
+    const out = scopeDistricts(div).map((d) => [d, sumSlice(m, d, k, div)]);
     return out.sort((a, b) => b[1] - a[1]);
+  }
+
+  function populateDistricts() {
+    const ds = scopeDistricts();
+    districtSel.innerHTML = "";
+    const allD = document.createElement("option");
+    allD.value = ALL;
+    allD.textContent = `All districts (${ds.length})`;
+    districtSel.appendChild(allD);
+    ds.forEach((d) => {
+      const o = document.createElement("option");
+      o.value = d;
+      o.textContent = shortDistrict(d);
+      districtSel.appendChild(o);
+    });
+    districtSel.value = ALL;
   }
 
   function populate() {
@@ -80,17 +135,19 @@
     });
     monthSel.value = DATA.current && months.includes(DATA.current) ? DATA.current : months[months.length - 1];
 
-    districtSel.innerHTML = "";
-    const allD = document.createElement("option");
-    allD.value = ALL;
-    allD.textContent = `All districts (${districts.length})`;
-    districtSel.appendChild(allD);
-    districts.forEach((d) => {
+    divisionSel.innerHTML = "";
+    [
+      ["ALL", `All J&K (${districts.length})`],
+      ["JAMMU", `Jammu Division (${DIVISIONS.JAMMU.length})`],
+      ["SRINAGAR", `Srinagar Division (${DIVISIONS.SRINAGAR.length})`],
+    ].forEach(([v, label]) => {
       const o = document.createElement("option");
-      o.value = d;
-      o.textContent = shortDistrict(d);
-      districtSel.appendChild(o);
+      o.value = v;
+      o.textContent = label;
+      divisionSel.appendChild(o);
     });
+    divisionSel.value = activeDivision;
+    populateDistricts();
 
     makerSel.innerHTML = "";
     const allK = document.createElement("option");
@@ -216,15 +273,18 @@
     const tbody = document.createElement("tbody");
     const tfoot = document.createElement("tfoot");
 
+    const ds = scopeDistricts();
+    const divSuffix = activeDivision === "ALL" ? "" : ` · ${DIVISION_LABELS[activeDivision]}`;
+
     if (d === ALL) {
-      title.textContent = `Maker × district — ${monthName(m)}`;
+      title.textContent = `Maker × district — ${monthName(m)}${divSuffix}`;
       hint.textContent = "Rows sorted by total; heatmap shows relative volume per district.";
       const head = document.createElement("tr");
-      head.innerHTML = `<th>Maker</th>${districts.map((x) => `<th title="${x}">${shortDistrict(x)}</th>`).join("")}<th>Total</th>`;
+      head.innerHTML = `<th>Maker</th>${ds.map((x) => `<th title="${x}">${shortDistrict(x)}</th>`).join("")}<th>Total</th>`;
       thead.appendChild(head);
 
       let rows = makersInSlice(m, ALL, k);
-      let colMax = districts.map((dist) => {
+      let colMax = ds.map((dist) => {
         let mx = 0;
         for (const [maker] of rows) mx = Math.max(mx, get(m, dist, maker));
         return mx || 1;
@@ -233,7 +293,7 @@
       rows.forEach(([maker, rowTotal]) => {
         const tr = document.createElement("tr");
         const cells = [`<td title="${maker}">${maker}</td>`];
-        districts.forEach((dist, i) => {
+        ds.forEach((dist, i) => {
           const v = get(m, dist, maker);
           cells.push(`<td class="num ${cellClass(v, colMax[i])}">${v ? fmt(v) : "—"}</td>`);
         });
@@ -242,7 +302,7 @@
         tbody.appendChild(tr);
       });
       const foot = document.createElement("tr");
-      foot.innerHTML = `<td>Total</td>${districts.map((dist) => `<td class="num">${fmt(sumSlice(m, dist, k))}</td>`).join("")}<td class="num">${fmt(grandTotal)}</td>`;
+      foot.innerHTML = `<td>Total</td>${ds.map((dist) => `<td class="num">${fmt(sumSlice(m, dist, k))}</td>`).join("")}<td class="num">${fmt(grandTotal)}</td>`;
       tfoot.appendChild(foot);
     } else {
       title.textContent = `${shortDistrict(d)} — month-wise by maker`;
@@ -302,7 +362,7 @@
     }
     rows.forEach(([maker, cur]) => {
       const before = d === ALL
-        ? districts.reduce((a, dist) => a + get(prev, dist, maker), 0)
+        ? scopeDistricts().reduce((a, dist) => a + get(prev, dist, maker), 0)
         : get(prev, d, maker);
       const diff = cur - before;
       const pct = before ? (diff / before) * 100 : null;
@@ -323,6 +383,28 @@
     table.appendChild(tfoot);
   }
 
+  function renderDivisionSplit(m, k) {
+    const j = sumSlice(m, ALL, k, "JAMMU");
+    const s = sumSlice(m, ALL, k, "SRINAGAR");
+    const total = j + s;
+    const pct = (v) => (total ? (v / total) * 100 : 0);
+    el("divJammuTotal").textContent = fmt(j);
+    el("divSrinagarTotal").textContent = fmt(s);
+    el("divJammuPct").textContent = total ? `${pct(j).toFixed(1)}% of J&K` : "No sales";
+    el("divSrinagarPct").textContent = total ? `${pct(s).toFixed(1)}% of J&K` : "No sales";
+    el("splitJammu").style.width = `${pct(j)}%`;
+    el("splitSrinagar").style.width = `${pct(s)}%`;
+    el("divJammu").classList.toggle("active", activeDivision === "JAMMU");
+    el("divSrinagar").classList.toggle("active", activeDivision === "SRINAGAR");
+  }
+
+  function setDivision(div) {
+    activeDivision = div;
+    divisionSel.value = div;
+    populateDistricts();
+    render();
+  }
+
   function render() {
     const m = monthSel.value;
     const d = districtSel.value;
@@ -338,11 +420,19 @@
     renderDistrictBars(m, d, k);
     renderMatrix(m, d, k);
     renderCompare(m, d, k, prev);
+    renderDivisionSplit(m, k);
   }
 
   [monthSel, districtSel, makerSel, compareSel].forEach((s) => s.addEventListener("change", render));
+  divisionSel.addEventListener("change", () => setDivision(divisionSel.value));
+  el("divJammu").addEventListener("click", () => setDivision(activeDivision === "JAMMU" ? "ALL" : "JAMMU"));
+  el("divSrinagar").addEventListener("click", () => setDivision(activeDivision === "SRINAGAR" ? "ALL" : "SRINAGAR"));
+
   resetBtn.addEventListener("click", () => {
     monthSel.value = DATA.current && months.includes(DATA.current) ? DATA.current : months[months.length - 1];
+    activeDivision = "ALL";
+    divisionSel.value = "ALL";
+    populateDistricts();
     districtSel.value = ALL;
     makerSel.value = ALL;
     compareSel.value = "prev";

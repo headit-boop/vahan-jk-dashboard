@@ -25,7 +25,7 @@ The Windows task **Vahan Daily Report** runs at **09:30** and rebuilds `VAHAN_DA
    - `styles.css`
    - `app.js`
    - `data.js`
-3. Repository â†’ **Settings â†’ Pages** â†’ **Build and deployment**:
+3. Repository -> **Settings -> Pages** -> **Build and deployment**:
    - Source: **Deploy from a branch**
    - Branch: **main** / **root**
    - Save.
